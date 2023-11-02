@@ -2,6 +2,8 @@ package models
 
 import (
 	"bytes"
+	"encoding/base64"
+	"github.com/skip2/go-qrcode"
 	"net/mail"
 	"net/url"
 	"path"
@@ -24,7 +26,15 @@ type PhishingTemplateContext struct {
 	TrackingURL string
 	RId         string
 	BaseURL     string
+	B64QRCode   string
 	BaseRecipient
+}
+
+// generate qr data
+func qrString(targetURL string) string {
+	var data []byte
+	data, _ = qrcode.Encode(targetURL, qrcode.Medium, 256)
+	return base64.StdEncoding.EncodeToString(data)
 }
 
 // NewPhishingTemplateContext returns a populated PhishingTemplateContext,
@@ -69,6 +79,7 @@ func NewPhishingTemplateContext(ctx TemplateContext, r BaseRecipient, rid string
 		Tracker:       "<img alt='' style='display: none' src='" + trackingURL.String() + "'/>",
 		From:          fn,
 		RId:           rid,
+		B64QRCode:     "<img src='data:image/png;base64," + qrString(phishURL.String()) + "'/>",
 	}, nil
 }
 
